@@ -1,74 +1,111 @@
-import { Image, StyleSheet, Platform } from 'react-native';
-
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, View, FlatList, SafeAreaView, ActivityIndicator } from 'react-native';
+import supabase from './supabaseClient';
 
 export default function HomeScreen() {
+  const [dishes, setDishes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDishes = async () => {
+      let { data, error } = await supabase
+        .from('dishes')
+        .select(`
+          id,
+          image_link,
+          name,
+          nutrition_info,
+          dish_categories (
+            categories
+          ),
+          dish_cooking (
+            cooking_instructions
+          ),
+          dish_ingredients (
+            ingredients
+          ),
+          dish_preparations ( 
+            preparation
+          ),
+          dish_serving (
+            serving_instructions
+          ),
+          dish_tags (
+            tags
+          ),
+          dish_tips (
+            tips
+          )
+        `);
+
+      if (error) {
+        console.log('Error fetching dishes:', error);
+      } else {
+        setDishes(data || []);
+      }
+      setLoading(false);
+    };
+
+    fetchDishes();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <SafeAreaView style={styles.container}>
+      <FlatList
+        data={dishes}
+        keyExtractor={(item) => item.id?.toString()}
+        renderItem={({ item }) => (
+          <View style={styles.itemContainer}>
+            <Text style={styles.itemText}>Name: {item.name}</Text>
+            <Text style={styles.itemText}>Image: {item.image_link}</Text>
+            <Text style={styles.itemText}>Nutrition Info: {item.nutrition_info}</Text>
+            <Text style={styles.itemText}>Categories: {JSON.stringify(item.dish_categories)}</Text>
+            <Text style={styles.itemText}>Cooking Instructions: {JSON.stringify(item.dish_cooking)}</Text>
+            <Text style={styles.itemText}>Ingredients: {JSON.stringify(item.dish_ingredients)}</Text>
+            <Text style={styles.itemText}>Preparation: {JSON.stringify(item.dish_preparations)}</Text>
+            <Text style={styles.itemText}>Serving Instructions: {JSON.stringify(item.dish_serving)}</Text>
+            <Text style={styles.itemText}>Tags: {JSON.stringify(item.dish_tags)}</Text>
+            <Text style={styles.itemText}>Tips: {JSON.stringify(item.dish_tips)}</Text>
+
+          </View>
+        )}
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  container: {
+    flex: 1,
+    backgroundColor: '#f8f8f8',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  itemContainer: {
+    padding: 16,
+    marginVertical: 8,
+    marginHorizontal: 16,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  itemText: {
+    fontSize: 16,
   },
 });
