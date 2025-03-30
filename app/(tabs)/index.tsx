@@ -41,7 +41,17 @@ export default function HomeScreen() {
       if (error) {
         console.log('Error fetching dishes:', error);
       } else {
-        setDishes(data || []);
+          const transformedData = data?.map(dish => ({
+              ...dish,
+              categories: dish.dish_categories.map(item => item.categories),
+              cooking_instructions: dish.dish_cooking.map(item => item.cooking_instructions),
+              ingredients: dish.dish_ingredients.map(item => item.ingredients),
+              preparation: dish.dish_preparations.map(item => item.preparation),
+              serving_instructions: dish.dish_serving.map(item => item.serving_instructions),
+              tags: dish.dish_tags.map(item => item.tags),
+              tips: dish.dish_tips.map(item => item.tips),
+          })) || [];
+        setDishes(transformedData || []);
       }
       setLoading(false);
     };
@@ -68,13 +78,13 @@ export default function HomeScreen() {
             <Text style={styles.itemText}>Name: {item.name}</Text>
             <Text style={styles.itemText}>Image: {item.image_link}</Text>
             <Text style={styles.itemText}>Nutrition Info: {item.nutrition_info}</Text>
-            <Text style={styles.itemText}>Categories: {JSON.stringify(item.dish_categories)}</Text>
-            <Text style={styles.itemText}>Cooking Instructions: {JSON.stringify(item.dish_cooking)}</Text>
-            <Text style={styles.itemText}>Ingredients: {JSON.stringify(item.dish_ingredients)}</Text>
-            <Text style={styles.itemText}>Preparation: {JSON.stringify(item.dish_preparations)}</Text>
-            <Text style={styles.itemText}>Serving Instructions: {JSON.stringify(item.dish_serving)}</Text>
-            <Text style={styles.itemText}>Tags: {JSON.stringify(item.dish_tags)}</Text>
-            <Text style={styles.itemText}>Tips: {JSON.stringify(item.dish_tips)}</Text>
+            <Text style={styles.itemText}>Categories: {JSON.stringify(item.categories)}</Text>
+            <Text style={styles.itemText}>Cooking Instructions: {JSON.stringify(item.cooking_instructions)}</Text>
+            <Text style={styles.itemText}>Ingredients: {JSON.stringify(item.ingredients)}</Text>
+            <Text style={styles.itemText}>Preparation: {JSON.stringify(item.preparation)}</Text>
+            <Text style={styles.itemText}>Serving Instructions: {JSON.stringify(item.serving_instructions)}</Text>
+            <Text style={styles.itemText}>Tags: {JSON.stringify(item.tags)}</Text>
+            <Text style={styles.itemText}>Tips: {JSON.stringify(item.tips)}</Text>
 
           </View>
         )}
